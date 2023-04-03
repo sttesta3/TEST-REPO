@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -62,37 +63,40 @@ int iterar_directorios(int fd, char* filtro,int sensitive, char* path){
 
 		 file = readdir(directorio);
 		 if (file != NULL){	// Si el archivo no apunta a NULL, o no es '.' '..'
-		 	if ((file->d_name[0] != '.' && file->d_name[1] != '\0')||(file->d_name[0] != '.' && file->d_name[1] && file->d_name[2] != '\0')){
-				if (file->d_type == 4){
-					// Actualizar Path
-					char path_2[256];
-					strcpy(path_2,path);
-					
-					int i = 0;
-					while (path_2[i] != '\0')
-						i++;
-					
-					for (int j = 0; j < strlen(file->d_name); j++)
-						path_2[ i + j ] = (file->d_name)[j];
-					path_2[ i + strlen(file->d_name) ] = '/';
-					path_2[ i + 1 + strlen(file->d_name) ] = '\0';
-					
-					// Recursión
-					int nuevo_directorio_fd = openat(dirfd(directorio), file->d_name, O_DIRECTORY);
-					iterar_directorios(nuevo_directorio_fd, filtro, sensitive, path_2);
-				}
-				else {
+			 char* name = file->d_name;
+
+			 // printf("STRING: %s LONG: %d\n",name,strlen(name));
+			
+			 if ((strcmp(name,".") != 0) && (strcmp(name,"..") != 0)){
 					int print = 0;
 					if ((sensitive == 1) && (strcasestr(file->d_name,filtro) != NULL))
 						print = 1;
 					else if ((sensitive == 0) && (strstr(file->d_name,filtro) != NULL))
 						print = 1;
-						
 					if (print == 1){
 						printf("%s",path);
-						printf("%s\n",file->d_name);	
+						printf("%s\n",file->d_name);
 					}
-				}
+
+					if (file->d_type == 4){
+						// Actualizar Path
+						char path_2[256];
+						strcpy(path_2,path);
+						
+						int i = 0;
+						while (path_2[i] != '\0')
+							i++;
+					
+						for (size_t j = 0; j < strlen(file->d_name); j++)
+							path_2[ i + j ] = (file->d_name)[j];
+						path_2[ i + strlen(file->d_name) ] = '/';
+						path_2[ i + 1 + strlen(file->d_name) ] = '\0';
+					
+						// Recursión
+						int nuevo_directorio_fd = openat(dirfd(directorio), file->d_name, O_DIRECTORY);
+						iterar_directorios(nuevo_directorio_fd, filtro, sensitive, path_2);
+					}
+			 	
 		 	}
 		 }
 	}
