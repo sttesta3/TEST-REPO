@@ -25,7 +25,10 @@ int main(int argc, char *argv[])
 	}
 	else{
 		for (int i=2; i <= N; i++)
-			write(pipefd[1], &i, 4);
+			if (write(pipefd[1], &i, 4) == -1){
+				fprintf(stderr,"ERROR write generacion de nums\n");
+				return 1;
+			}
 	}
 	close(pipefd[1]);
 
@@ -62,8 +65,12 @@ int filtrar (int pipefd[2]){
 				printf("primo %d\n",filtro);
 			}
 			else{
-				if (buf%filtro != 0)
-					write(pipefd_cd[1], &buf, 4);
+				if (buf%filtro != 0){
+					if (write(pipefd_cd[1], &buf, 4) == -1){
+						fprintf(stderr,"ERROR WRITE entre procesos\n");
+						return 1;
+					}
+				}
 			}
 		}
 
@@ -84,7 +91,7 @@ int string_a_int(char* str){
         while (*(str + largo) != '\0')
                 largo++;
 	
-	int resultado;
+	int resultado = 0;
         int temp;
 	int base;
         for (int i = 0; i < largo; i++){

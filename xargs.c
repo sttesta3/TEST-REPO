@@ -27,12 +27,13 @@ int main (int argc, char *argv[]){
 	size_t buffer = 0;
 
 	int i = 1;
-	char* argumentos[n+1];
+	char* argumentos[n+2];
 	argumentos[0] = comando;
-	for (int j = 1; j <= n+1; j++)
+	for (int j = 1; j < n+2; j++)
 		argumentos[j] = NULL;
 	
-	while(getline(&linea ,&buffer, stdin) != -1){
+	FILE * input = fdopen(0,"r");	
+	while(getline(&linea ,&buffer, input) != -1){
 		argumentos[i] = strdup(linea);
 		argumentos[i][strlen(argumentos[i]) - 1] = '\0';
 		i++;
@@ -45,8 +46,9 @@ int main (int argc, char *argv[]){
 	
 	if (argumentos[1] != NULL)
 		ejecutar_comando(comando,argumentos);
-
+	
 	free(linea);
+	close(0); close(1); close(2);
 	return 0;
 }
 
